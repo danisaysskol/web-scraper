@@ -2,6 +2,38 @@
 
 A Python-based web scraper that extracts both content and images from websites. Built with Flask and Crawl4AI.
 
+## First Time Setup
+
+1. Make sure you have Python 3.8 or higher installed:
+   ```bash
+   python3 --version
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Linux/Mac
+   # OR
+   .venv\Scripts\activate  # On Windows
+   ```
+
+3. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Install Playwright browsers (required for web scraping):
+   ```bash
+   playwright install
+   ```
+
+5. Start the application:
+   ```bash
+   python3 app.py
+   ```
+
+6. Open your browser and navigate to `http://localhost:5000`
+
 ## Features
 
 - Web page crawling with configurable depth
