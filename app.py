@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify, send_from_directory,
 import asyncio
 import os
 import shutil
+import json
+import csv
 from main import crawl_page
 from crawl4ai import AsyncWebCrawler
 from crawl4ai.async_configs import BrowserConfig
@@ -14,7 +16,8 @@ scraping_progress = {
     'current': 0,
     'total': 0,
     'status': '',
-    'is_running': False
+    'is_running': False,
+    'should_stop': False
 }
 
 @app.route('/')
@@ -36,29 +39,62 @@ def scrape():
         'current': 0,
         'total': 0,
         'status': 'Starting scraping process...',
-        'is_running': True
+        'is_running': True,
+        'should_stop': False
     }
 
     async def run_crawl():
         browser_config = BrowserConfig(headless=True)
         async with AsyncWebCrawler(config=browser_config) as crawler:
-            await crawl_page(
-                crawler=crawler,
-                url=url,
-                visited=set(),
-                output_dir=output_dir,
-                depth=0,
-                max_depth=max_depth,
-                progress_callback=update_progress
-            )
-        # Mark scraping as complete
-        scraping_progress['is_running'] = False
+            try:
+                await crawl_page(
+                    crawler=crawler,
+                    url=url,
+                    visited=set(),
+                    output_dir=output_dir,
+                    depth=0,
+                    max_depth=max_depth,
+                    progress_callback=update_progress
+                )
+            except Exception as e:
+                scraping_progress['status'] = f'Error: {str(e)}'
+            finally:
+                scraping_progress['is_running'] = False
+                # Save data in JSON and CSV formats
+                save_data_in_formats(output_dir)
 
     def update_progress(current, total, status):
         global scraping_progress
+        if scraping_progress['should_stop']:
+            raise Exception('Scraping stopped by user')
         scraping_progress['current'] = current
         scraping_progress['total'] = total
         scraping_progress['status'] = status
+
+    def save_data_in_formats(output_dir):
+        # Create JSON file
+        json_data = []
+        for filename in os.listdir(output_dir):
+            if filename.endswith('.md'):
+                file_path = os.path.join(output_dir, filename)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                json_data.append({
+                    'filename': filename,
+                    'content': content,
+                    'url': url
+                })
+        
+        # Save JSON
+        with open(os.path.join(output_dir, 'scraped_data.json'), 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+        
+        # Save CSV
+        with open(os.path.join(output_dir, 'scraped_data.csv'), 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Filename', 'Content', 'URL'])
+            for item in json_data:
+                writer.writerow([item['filename'], item['content'], item['url']])
 
     try:
         asyncio.run(run_crawl())
@@ -66,6 +102,12 @@ def scrape():
     except Exception as e:
         scraping_progress['is_running'] = False
         return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/stop-scraping', methods=['POST'])
+def stop_scraping():
+    global scraping_progress
+    scraping_progress['should_stop'] = True
+    return jsonify({'success': True, 'message': 'Stopping scraping process...'})
 
 @app.route('/progress')
 def get_progress():

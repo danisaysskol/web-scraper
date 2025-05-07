@@ -44,7 +44,15 @@
         <!-- Progress Section -->
         <div id="progressSection" class="mt-4 {% if not progress.is_running %}d-none{% endif %}">
             <div class="card shadow-sm p-4">
-                <h5 class="card-title mb-3">Scraping Progress</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Scraping Progress</h5>
+                    <button id="stopScraping" class="btn btn-danger btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stop-fill me-1" viewBox="0 0 16 16">
+                            <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
+                        </svg>
+                        Stop Scraping
+                    </button>
+                </div>
                 <div class="progress mb-2" style="height: 25px;">
                     <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
                          role="progressbar" 
@@ -72,6 +80,7 @@
         const $scrapeButton = $('#scrapeButton');
         const $buttonText = $('.button-text');
         const $spinner = $('.spinner-border');
+        const $stopButton = $('#stopScraping');
         let progressInterval = null;
 
         function updateProgress(percent, status) {
@@ -131,6 +140,18 @@
         {% if progress.is_running %}
         showLoading();
         {% endif %}
+
+        $stopButton.on('click', function() {
+            $.post('/stop-scraping', function(response) {
+                if (response.success) {
+                    hideLoading();
+                    $result.removeClass('alert-success')
+                           .addClass('alert-warning')
+                           .removeClass('d-none')
+                           .text('Scraping stopped by user.');
+                }
+            });
+        });
 
         $form.on('submit', function(e) {
             e.preventDefault();

@@ -19,17 +19,43 @@
 
         <div id="alertContainer"></div>
 
-        <div class="card shadow-sm p-3">
-            {% if files %}
-            <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-danger" id="deleteAllButton">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">Scraped Pages</h1>
+            <div>
+                <a href="/" class="btn btn-outline-primary me-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left me-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                    </svg>
+                    Back to Scraper
+                </a>
+                <div class="btn-group">
+                    <a href="/scraped_pages/scraped_data.json" class="btn btn-outline-success" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-json me-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5ZM1.5 1.5A.5.5 0 0 0 1 2v12a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-12a.5.5 0 0 0-.5-.5h-13Z"/>
+                            <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5ZM1.5 1.5A.5.5 0 0 0 1 2v12a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-12a.5.5 0 0 0-.5-.5h-13Z"/>
+                        </svg>
+                        Export JSON
+                    </a>
+                    <a href="/scraped_pages/scraped_data.csv" class="btn btn-outline-success" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-csv me-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5ZM1.5 1.5A.5.5 0 0 0 1 2v12a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-12a.5.5 0 0 0-.5-.5h-13Z"/>
+                            <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5ZM1.5 1.5A.5.5 0 0 0 1 2v12a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-12a.5.5 0 0 0-.5-.5h-13Z"/>
+                        </svg>
+                        Export CSV
+                    </a>
+                </div>
+                <button id="deleteAllBtn" class="btn btn-danger ms-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-1" viewBox="0 0 16 16">
                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                         <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                     </svg>
-                    Delete All Pages
+                    Delete All
                 </button>
             </div>
+        </div>
+
+        <div class="card shadow-sm p-3">
+            {% if files %}
             <ul class="list-group list-group-flush">
                 {% for file in files %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -148,7 +174,7 @@
                                         <p class="text-muted mb-0">No pages have been scraped yet.</p>
                                     </div>
                                 `);
-                                $('#deleteAllButton').hide();
+                                $('#deleteAllBtn').hide();
                             }
                         });
                     } else {
@@ -165,7 +191,7 @@
         });
 
         // Delete All functionality
-        $('#deleteAllButton').on('click', function() {
+        $('#deleteAllBtn').on('click', function() {
             deleteAllModal.show();
         });
 
@@ -182,7 +208,7 @@
                                 <p class="text-muted mb-0">No pages have been scraped yet.</p>
                             </div>
                         `);
-                        $('#deleteAllButton').hide();
+                        $('#deleteAllBtn').hide();
                     } else {
                         showAlert(response.message || 'Failed to delete all pages', 'danger');
                     }
