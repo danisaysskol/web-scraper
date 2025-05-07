@@ -1,15 +1,25 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, session
 import asyncio
 import os
+import shutil
 from main import crawl_page
 from crawl4ai import AsyncWebCrawler
 from crawl4ai.async_configs import BrowserConfig
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)  # Required for session
+
+# Global variable to store scraping progress
+scraping_progress = {
+    'current': 0,
+    'total': 0,
+    'status': '',
+    'is_running': False
+}
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', progress=scraping_progress)
 
 @app.route('/scrape', methods=['POST'])
 def scrape():
@@ -19,6 +29,15 @@ def scrape():
     output_dir = 'scraped_pages'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
+    # Reset progress
+    global scraping_progress
+    scraping_progress = {
+        'current': 0,
+        'total': 0,
+        'status': 'Starting scraping process...',
+        'is_running': True
+    }
 
     async def run_crawl():
         browser_config = BrowserConfig(headless=True)
@@ -30,12 +49,27 @@ def scrape():
                 output_dir=output_dir,
                 depth=0,
                 max_depth=max_depth,
+                progress_callback=update_progress
             )
+        # Mark scraping as complete
+        scraping_progress['is_running'] = False
+
+    def update_progress(current, total, status):
+        global scraping_progress
+        scraping_progress['current'] = current
+        scraping_progress['total'] = total
+        scraping_progress['status'] = status
+
     try:
         asyncio.run(run_crawl())
         return jsonify({'success': True, 'message': 'Scraping completed!'})
     except Exception as e:
+        scraping_progress['is_running'] = False
         return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/progress')
+def get_progress():
+    return jsonify(scraping_progress)
 
 @app.route('/pages')
 def list_pages():
@@ -67,6 +101,52 @@ def view_page(filename):
 def serve_image(page_dir, filename):
     images_dir = os.path.join('scraped_pages', f"{page_dir}", 'images')
     return send_from_directory(images_dir, filename)
+
+@app.route('/delete-page', methods=['POST'])
+def delete_page():
+    filename = request.form.get('filename')
+    if not filename:
+        return jsonify({'success': False, 'message': 'No filename provided'})
+
+    try:
+        # Get the full path of the file and its directory
+        file_path = os.path.join('scraped_pages', filename)
+        dir_path = os.path.splitext(file_path)[0]
+
+        # Delete the markdown file
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        # Delete the associated directory (which contains images)
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)
+
+        return jsonify({'success': True, 'message': 'Page deleted successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/delete-all-pages', methods=['POST'])
+def delete_all_pages():
+    try:
+        # Get all markdown files
+        files = [f for f in os.listdir('scraped_pages') if f.endswith('.md')]
+        
+        # Delete each file and its associated directory
+        for filename in files:
+            file_path = os.path.join('scraped_pages', filename)
+            dir_path = os.path.splitext(file_path)[0]
+            
+            # Delete the markdown file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            # Delete the associated directory (which contains images)
+            if os.path.exists(dir_path):
+                shutil.rmtree(dir_path)
+        
+        return jsonify({'success': True, 'message': 'All pages deleted successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True)

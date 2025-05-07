@@ -18,6 +18,7 @@ async def crawl_page(
     output_dir,
     depth=0,
     max_depth=2,
+    progress_callback=None
 ):
     """
     Recursively crawls the given URL up to `max_depth` levels deep, 
@@ -30,6 +31,10 @@ async def crawl_page(
     visited.add(url)
     print(f"[Depth {depth}] Crawling: {url}")
 
+    # Update progress
+    if progress_callback:
+        progress_callback(len(visited), len(visited) + 1, f"Crawling: {url}")
+
     # Run the crawl
     run_config = CrawlerRunConfig()
     result = await crawler.arun(url=url, config=run_config)
@@ -37,6 +42,8 @@ async def crawl_page(
     # If crawl wasn't successful, just log and return
     if not result.success:
         print(f"Failed to crawl {url} - {result.error_message}")
+        if progress_callback:
+            progress_callback(len(visited), len(visited), f"Failed to crawl: {url}")
         return
 
     # ---------------------------------------------------
@@ -59,6 +66,10 @@ async def crawl_page(
 
     print(f"  Saved: {file_path}")
 
+    # Update progress
+    if progress_callback:
+        progress_callback(len(visited), len(visited) + 1, f"Processing images: {url}")
+
     # ---------------------------------------------------
     # 2. Download images from the page
     # ---------------------------------------------------
@@ -75,11 +86,15 @@ async def crawl_page(
     # 3. Recursively follow internal links
     # ---------------------------------------------------
     if "internal" in result.links:
-        for link_info in result.links["internal"]:
+        total_links = len(result.links["internal"])
+        for i, link_info in enumerate(result.links["internal"], 1):
             href = link_info["href"]
             next_url = urljoin(url, href)
 
             if next_url not in visited:
+                if progress_callback:
+                    progress_callback(len(visited), len(visited) + total_links, 
+                                    f"Following link {i}/{total_links}: {next_url}")
                 await crawl_page(
                     crawler,
                     next_url,
@@ -87,7 +102,12 @@ async def crawl_page(
                     output_dir,
                     depth=depth + 1,
                     max_depth=max_depth,
+                    progress_callback=progress_callback
                 )
+
+    # Update final progress
+    if progress_callback:
+        progress_callback(len(visited), len(visited), f"Completed: {url}")
 
 
 

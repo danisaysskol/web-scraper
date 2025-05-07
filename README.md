@@ -2,6 +2,38 @@
 
 A Python-based web scraper that extracts both content and images from websites. Built with Flask and Crawl4AI.
 
+## Features
+
+- Web page crawling with configurable depth
+- Content extraction and storage in Markdown format
+- Image downloading and storage
+- Real-time progress tracking with visual feedback
+- Web interface for scraping and viewing results
+- Responsive image gallery
+- Asynchronous processing for better performance
+- Page management with delete functionality
+- User-friendly interface with accessibility features
+
+## Project Structure
+
+```
+.
+├── app.py              # Flask web application
+├── main.py            # Main crawling logic
+├── image_scraper.py   # Image scraping module
+├── requirements.txt   # Python dependencies
+├── templates/         # HTML templates
+│   ├── index.html    # Main page with progress tracking
+│   ├── pages.html    # List of scraped pages with delete functionality
+│   └── view_page.html # Page content and images view
+└── scraped_pages/    # Storage directory
+    └── domain__page/
+        ├── domain__page.md
+        └── images/
+            ├── image1.jpg
+            └── image2.png
+```
+
 ## First Time Setup
 
 1. Make sure you have Python 3.8 or higher installed:
@@ -34,75 +66,50 @@ A Python-based web scraper that extracts both content and images from websites. 
 
 6. Open your browser and navigate to `http://localhost:5000`
 
-## Features
-
-- Web page crawling with configurable depth
-- Content extraction and storage in Markdown format
-- Image downloading and storage
-- Web interface for scraping and viewing results
-- Responsive image gallery
-- Asynchronous processing for better performance
-
-## Project Structure
-
-```
-.
-├── app.py              # Flask web application
-├── main.py            # Main crawling logic
-├── image_scraper.py   # Image scraping module
-├── requirements.txt   # Python dependencies
-├── templates/         # HTML templates
-│   ├── index.html    # Main page
-│   ├── pages.html    # List of scraped pages
-│   └── view_page.html # Page content and images view
-└── scraped_pages/    # Storage directory
-    └── domain__page/
-        ├── domain__page.md
-        └── images/
-            ├── image1.jpg
-            └── image2.png
-```
-
-## Image Scraping Implementation
-
-The image scraping functionality is implemented in the `image_scraper.py` module, which provides:
-
-1. **ImageScraper Class**:
-   - Asynchronous image downloading
-   - Automatic directory creation
-   - Image type validation
-   - Safe filename generation
-   - Error handling
-
-2. **Storage Structure**:
-   - Images are stored in a subdirectory named `images` within each page's directory
-   - Original image filenames are preserved when possible
-   - Invalid characters in filenames are replaced with underscores
-
-3. **Features**:
-   - Supports multiple image formats (jpg, png, gif, webp)
-   - Handles relative and absolute URLs
-   - Skips invalid or non-image URLs
-   - Lazy loading in the web interface
-   - Responsive image grid layout
-
 ## Usage
 
 1. Start the application:
    ```bash
-   python app.py
+   python3 app.py
    ```
 
 2. Open your browser and navigate to `http://localhost:5000`
 
 3. Enter a URL to scrape and configure:
-   - Maximum crawl depth
+   - Maximum crawl depth (1-5)
    - Tags to extract (optional)
+   - Watch the real-time progress bar as pages are scraped
 
-4. View results:
+4. View and manage results:
    - Click "View Scraped Pages" to see all scraped content
    - Each page shows both markdown content and associated images
+   - Use the delete button to remove unwanted pages
    - Images are displayed in a responsive grid layout
+
+## User Interface Features
+
+1. **Progress Tracking**:
+   - Real-time progress bar during scraping
+   - Status updates for current operation
+   - Visual feedback for completed tasks
+
+2. **Page Management**:
+   - List view of all scraped pages
+   - Delete functionality with confirmation
+   - Empty state handling
+   - Smooth animations for better UX
+
+3. **Accessibility**:
+   - ARIA labels for screen readers
+   - Keyboard navigation support
+   - High contrast text
+   - Responsive design for all devices
+
+4. **Visual Feedback**:
+   - Loading spinners
+   - Success/error notifications
+   - Smooth transitions
+   - Clear visual hierarchy
 
 ## Dependencies
 
@@ -112,6 +119,8 @@ Key dependencies include:
 - BeautifulSoup4: HTML parsing
 - aiohttp: Asynchronous HTTP client
 - Playwright: Browser automation
+- Bootstrap 5: UI framework
+- jQuery: DOM manipulation
 
 See `requirements.txt` for the complete list.
 
@@ -120,4 +129,6 @@ See `requirements.txt` for the complete list.
 - Images are downloaded asynchronously to improve performance
 - The scraper respects website structure and follows internal links only
 - Image downloads are handled gracefully with error recovery
-- The web interface provides a user-friendly way to browse results 
+- The web interface provides a user-friendly way to browse results
+- Progress tracking helps users understand the scraping status
+- Delete functionality allows easy cleanup of unwanted content 
